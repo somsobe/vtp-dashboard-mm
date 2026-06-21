@@ -31,9 +31,9 @@ KPI_IS_RATIO = {3: True, 4: False, 7: False, 8: True, 9: True, 10: True}
 BASE_DIR = Path(__file__).resolve().parent
 
 AGG_DIR = BASE_DIR / "5. Aggregate"
-RESOURCE_DIR = BASE_DIR / "1. Resource"
+RESOURCE_DIR = BASE_DIR / "1. Resources"
 
-PATH_KPI_TARGET = RESOURCE_DIR / "KPI_Target.csv"
+PATH_KPI_TARGET = AGG_DIR / "KPI_Target.csv"
 
 # ─── LOAD DATA ────────────────────────────────────────────────────────────────
 
