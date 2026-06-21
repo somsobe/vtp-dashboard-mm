@@ -1,0 +1,6 @@
+streamlit>=1.35.0
+polars>=0.20.0
+plotly>=5.20.0
+fastexcel
+xlsxwriter
+pandas
