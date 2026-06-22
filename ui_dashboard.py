@@ -40,7 +40,7 @@ PATH_KPI_TARGET = AGG_DIR / "KPI_Target.csv"
 @st.cache_data(ttl=3600)
 def load_data():
     inbound_files = sorted(AGG_DIR.glob("Inbound_T*.csv"))
-    actual_files = sorted(AGG_DIR.glob("KPI_Actual_T*.csv"))
+    actual_files = sorted(AGG_DIR.glob("Actual_KPI_T*.csv"))
 
     inbound = (
         pl.concat([pl.read_csv(f) for f in inbound_files])
