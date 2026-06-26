@@ -4,8 +4,6 @@ import plotly.graph_objects as go
 import plotly.express as px
 from pathlib import Path
 import os
-from datetime import datetime
-from zoneinfo import ZoneInfo
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 
@@ -172,7 +170,7 @@ with st.sidebar:
 
         st.markdown(f"**Aggregate** (`{AGG_DIR.name}/`)")
         inbound_files_listed = sorted(AGG_DIR.glob("Inbound_T*.csv"))
-        actual_files_listed = sorted(AGG_DIR.glob("Actual_KPI_T*.csv"))
+        actual_files_listed = sorted(AGG_DIR.glob("KPI_Actual_T*.csv"))
         for f in inbound_files_listed:
             st.caption(f"• `{f.name}`")
         for f in actual_files_listed:
@@ -186,10 +184,6 @@ with st.sidebar:
     # Date range
     min_date = actual["date"].min()
     max_date = actual["date"].max()
-
-
-    today = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).date()
-    max_date = today
     st.markdown("**Khoảng thời gian**")
     col1, col2 = st.columns(2)
     with col1:
