@@ -18,7 +18,7 @@ st.set_page_config(
 KPI_META = {
     3:  {"name": "Tỷ lệ xuất sạch",        "direction": "gte", "unit": "%",    "fmt": ".2%"},
     4:  {"name": "Thời gian chờ nhập",      "direction": "lte", "unit": "phút", "fmt": ".2f"},
-    7:  {"name": "Hiệu quả kết nối",        "direction": "gte", "unit": "%",    "fmt": ".2f"},
+    7:  {"name": "Hiệu quả kết nối",        "direction": "gte", "unit": "kg/km",    "fmt": ".2f"},
     8:  {"name": "Hiệu quả xe (đi)",        "direction": "gte", "unit": "%",    "fmt": ".2%"},
     9:  {"name": "Hiệu quả xe (về)",        "direction": "gte", "unit": "%",    "fmt": ".2%"},
     10: {"name": "Tỷ lệ kết nối đúng đủ",  "direction": "gte", "unit": "%",    "fmt": ".2%"},
@@ -287,7 +287,7 @@ with tab1:
         val = cumulative.get(kpi_id)
         tgt_val = get_network_target(kpi_id, ref_month, ref_year)
 
-        if val is not None and KPI_IS_RATIO.get(kpi_id) and kpi_id != 4:
+        if val is not None and KPI_IS_RATIO.get(kpi_id) and kpi_id != [4,7]:
             display_val = f"{val*100:.2f}%"
             tgt_display = f"≥ {tgt_val*100:.2f}%" if tgt_val and meta["direction"] == "gte" else (f"≤ {tgt_val*100:.2f}%" if tgt_val else "—")
             delta_display = f"{(val - tgt_val)*100:+.2f}%" if tgt_val else ""
@@ -295,6 +295,10 @@ with tab1:
             display_val = f"{val:.2f} phút" if val else "—"
             tgt_display = f"≤ {tgt_val:.2f} phút" if tgt_val else "—"
             delta_display = f"{val - tgt_val:+.2f} phút" if tgt_val and val else ""
+        elif kpi_id == 7:
+            display_val = f"{val:.2f} kg/km" if val else "—"
+            tgt_display = f"≤ {tgt_val:.2f} kg/km" if tgt_val else "—"
+            delta_display = f"{val - tgt_val:+.2f} kg/km" if tgt_val and val else ""
         else:
             display_val = f"{val:.2f}" if val else "—"
             tgt_display = "—"
@@ -420,7 +424,7 @@ with tab1:
     fig_top.update_layout(
         height=max(300, len(top_inbound) * 28),
         margin=dict(l=0, r=80, t=10, b=0),
-        xaxis_title="Sản lượng nhập (kiện)",
+        xaxis_title="Sản lượng nhập",
         plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
         font=dict(size=11),
     )
@@ -479,7 +483,7 @@ with tab2:
         tgt_val = get_target_for_unit(kpi_id, unit_detail, ref_month, ref_year)
         net_val = network_cum.get(kpi_id)
 
-        if val is not None and KPI_IS_RATIO.get(kpi_id) and kpi_id != 4:
+        if val is not None and KPI_IS_RATIO.get(kpi_id) and kpi_id != [4,7]:
             display_val = f"{val*100:.2f}%"
             tgt_display = f"{tgt_val*100:.2f}%" if tgt_val else "—"
             net_display = f"{net_val*100:.2f}%" if net_val else "—"
@@ -489,8 +493,13 @@ with tab2:
             tgt_display = f"{tgt_val:.2f} phút" if tgt_val else "—"
             net_display = f"{net_val:.2f} phút" if net_val else "—"
             delta = (val - tgt_val) if tgt_val and val else None
+        elif kpi_id == 7:
+            display_val = f"{val:.2f} kg/km" if val else "—"
+            tgt_display = f"{tgt_val:.2f} kg/km" if tgt_val else "—"
+            net_display = f"{net_val:.2f} kg/km" if net_val else "—"
+            delta = (val - tgt_val) if tgt_val and val else None
         else:
-            display_val = f"{val:.4f}" if val else "—"
+            display_val = f"{val:.2f}" if val else "—"
             tgt_display = "—"
             net_display = "—"
             delta = None
@@ -532,7 +541,7 @@ with tab2:
         vals_raw = kpi_daily["val"].to_list()
         tgt_val = get_target_for_unit(kpi_id, unit_detail, ref_month, ref_year)
 
-        if KPI_IS_RATIO.get(kpi_id) and kpi_id != 4:
+        if KPI_IS_RATIO.get(kpi_id) and kpi_id != [4,7]:
             vals_plot = [v * 100 if v else None for v in vals_raw]
             tgt_plot = tgt_val * 100 if tgt_val else None
             y_suffix = "%"
@@ -540,6 +549,10 @@ with tab2:
             vals_plot = vals_raw
             tgt_plot = tgt_val
             y_suffix = " phút"
+        elif kpi_id == 7:
+            vals_plot = vals_raw
+            tgt_plot = tgt_val
+            y_suffix = " kg/km"
         else:
             vals_plot = vals_raw
             tgt_plot = tgt_val
@@ -584,7 +597,7 @@ with tab2:
         net = network_cum.get(kpi_id)
         if val is None:
             continue
-        if KPI_IS_RATIO.get(kpi_id) and kpi_id != 4:
+        if KPI_IS_RATIO.get(kpi_id) and kpi_id != [4,7]:
             val_d = f"{val*100:.2f}%"
             net_d = f"{net*100:.2f}%" if net else "—"
             delta_d = f"{(val-net)*100:+.2f}%" if net else "—"
@@ -592,6 +605,10 @@ with tab2:
             val_d = f"{val:.2f} phút"
             net_d = f"{net:.2f} phút" if net else "—"
             delta_d = f"{val-net:+.2f} phút" if net else "—"
+        elif kpi_id == 7:
+            val_d = f"{val:.2f} kg/km"
+            net_d = f"{net:.2f} kg/km" if net else "—"
+            delta_d = f"{val-net:+.2f} kg/km" if net else "—"
         else:
             val_d = f"{val:.4f}"
             net_d = f"{net:.4f}" if net else "—"
