@@ -19,13 +19,15 @@ KPI_META = {
     3:  {"name": "Tỷ lệ xuất sạch",        "direction": "gte", "unit": "%",    "fmt": ".2%"},
     4:  {"name": "Thời gian chờ nhập",      "direction": "lte", "unit": "phút", "fmt": ".2f"},
     7:  {"name": "Hiệu quả kết nối",        "direction": "gte", "unit": "kg/km",    "fmt": ".2f"},
+    # 5:  {"name":"Tỷ lệ nhập đúng tải kiện 12.5s",   "direction":"gte","unit":"%", "fmt": ".2%"},
+    5:  {"name": "Tỷ lệ nhập đúng tải kiện 12.5s",        "direction": "gte", "unit": "%",    "fmt": ".2%"},
     8:  {"name": "Hiệu quả xe (đi)",        "direction": "gte", "unit": "%",    "fmt": ".2%"},
     9:  {"name": "Hiệu quả xe (về)",        "direction": "gte", "unit": "%",    "fmt": ".2%"},
     10: {"name": "Tỷ lệ kết nối đúng đủ",  "direction": "gte", "unit": "%",    "fmt": ".2%"},
 }
 
-# KPIs trả về tỷ lệ (0-1) hay giá trị tuyệt đối
-KPI_IS_RATIO = {3: True, 4: False, 7: False, 8: True, 9: True, 10: True}
+# KPIs trả về tỷ lệ phần trăm hoặc giá trị tuyệt đối
+KPI_IS_RATIO = {3: True, 4: False, 5:True, 7: False, 8: True, 9: True, 10: True}
 
 # DATA PATHS
 BASE_DIR = Path(__file__).resolve().parent
@@ -37,8 +39,14 @@ PATH_KPI_TARGET = AGG_DIR / "KPI_Target.csv"
 
 # ─── LOAD DATA ────────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=3600)
-def load_data():
+def _agg_fingerprint() -> str:
+    files = sorted(AGG_DIR.glob("Inbound_T*.csv")) + sorted(AGG_DIR.glob("Actual_KPI_T*.csv"))
+    parts = [f"{f.name}:{f.stat().st_mtime}" for f in files]
+    return "|".join(parts)
+
+
+@st.cache_data
+def load_data(_fingerprint: str):
     inbound_files = sorted(AGG_DIR.glob("Inbound_T*.csv"))
     actual_files = sorted(AGG_DIR.glob("Actual_KPI_T*.csv"))
 
@@ -56,7 +64,12 @@ def load_data():
 
     return inbound, actual, target
 
-inbound, actual, target = load_data()
+with st.sidebar:
+    if st.button("🔄 Làm mới dữ liệu", width="stretch"):
+        load_data.clear()
+        st.rerun()
+
+inbound, actual, target = load_data(_agg_fingerprint())
 
 # ─── HELPERS ──────────────────────────────────────────────────────────────────
 
@@ -121,8 +134,6 @@ def get_network_target(kpi_id: int, month: int, year: int) -> float | None:
     return rows["target_value"].mean()
 
 # ─── KPI CARD HELPERS ─────────────────────────────────────────────────────────
-# Tách ra function để dễ maintain; màu chữ phụ dùng #bbb (sáng hơn #888 cũ),
-# giá trị chính và số dùng #fff.
 
 def kpi_card_network(name, display_val, tgt_display, delta_display, status_label, status_color, meta):
     delta_color = (
@@ -163,7 +174,6 @@ with st.sidebar:
     st.markdown("---")
 
     # ── CONFIG PATHS EXPANDER ──────────────────────────────────────────────────
-    # Liệt kê tất cả file đang được đọc để dễ trace nguồn dữ liệu
     with st.expander("📁 Đường dẫn dữ liệu", expanded=False):
         st.markdown(f"**Thư mục gốc**")
         st.code(str(BASE_DIR), language=None)
